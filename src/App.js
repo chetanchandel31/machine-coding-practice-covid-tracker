@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import MainContent from "./components/MainContent/MainContent";
@@ -7,9 +7,11 @@ import getFormattedDateString from "./helpers/getFormattedDateString";
 function App() {
 	const [data, setData] = useState({});
 	const [selectedStates, setSelectedStates] = useState([]); //["AN", "AP" ....]
-	const [details, setDetails] = useState({ tested: 0, confirmed: 0, recovered: 0 });
+	const [details, setDetails] = useState({ tested: [], confirmed: [], recovered: [] });
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const isSelectedDateSameAsCurrentDate = selectedDate.toLocaleDateString() === new Date().toLocaleDateString();
+
+	const ref = useRef(true);
 
 	useEffect(() => {
 		const API = isSelectedDateSameAsCurrentDate
@@ -20,22 +22,24 @@ function App() {
 			.then(res => res.json())
 			.then(data => {
 				setData(data);
-				setSelectedStates(Object.keys(data));
+				if (ref.current) setSelectedStates(Object.keys(data));
+				ref.current = false;
 			})
 			.catch(err => console.log(err));
 	}, [selectedDate, isSelectedDateSameAsCurrentDate]);
 
 	// (re)-calculate details whenever date/selected states change
 	useEffect(() => {
-		let tested, confirmed, recovered;
-		tested = confirmed = recovered = 0;
+		let tested = [];
+		let confirmed = [];
+		let recovered = [];
 
 		for (let state of selectedStates) {
 			const totalStateStats = isSelectedDateSameAsCurrentDate ? data[state]?.total : data[state].dates[getFormattedDateString(selectedDate)]?.total;
 
-			tested += totalStateStats?.tested || 0;
-			confirmed += totalStateStats?.confirmed || 0;
-			recovered += totalStateStats?.recovered || 0;
+			tested.push(totalStateStats?.tested || 0);
+			confirmed.push(totalStateStats?.confirmed || 0);
+			recovered.push(totalStateStats?.recovered || 0);
 		}
 
 		setDetails({ tested, confirmed, recovered });
@@ -52,9 +56,3 @@ function App() {
 }
 
 export default App;
-
-// listen to changes in date
-// if selected date is same as current date, everything remains same
-// else change API and totalStateStats
-// memoize?
-// can add loader also

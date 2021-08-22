@@ -1,17 +1,14 @@
 import getFormattedDateString from "../../helpers/getFormattedDateString";
+import { HeaderContainer } from "./styles";
 
 const Header = ({ selectedDate, setSelectedDate }) => {
 	return (
-		<div>
-			<input
-				type="date"
-				value={getFormattedDateString(selectedDate)}
-				onChange={({ target }) => {
-					setSelectedDate(new Date(target.value));
-					console.log(new Date(target.value).toLocaleDateString() === new Date().toLocaleDateString());
-				}}
-			/>
-		</div>
+		<HeaderContainer>
+			<h1>Covid Tracker</h1>
+			<div>
+				<input type="date" value={getFormattedDateString(selectedDate)} onChange={({ target }) => setSelectedDate(new Date(target.value))} />
+			</div>
+		</HeaderContainer>
 	);
 };
 
